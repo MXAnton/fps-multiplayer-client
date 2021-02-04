@@ -96,6 +96,7 @@ public class Client : MonoBehaviour
         waitingForServerCallback = false;
 
         Debug.Log("Trying to reconnect..."); 
+        GameObject _reconnectingTextObject = Instantiate(UIManager.instance.reconnectingTextPrefab);
         
         isConnected = false;
         if (tcp != null)
@@ -126,6 +127,8 @@ public class Client : MonoBehaviour
         if (!tcp.socket.Connected)
         {
             Debug.Log("Couldn't reconnect!");
+            Destroy(_reconnectingTextObject);
+            Instantiate(UIManager.instance.couldntReconnectTextPrefab);
 
             instance.Disconnect();
             StopAllCoroutines();

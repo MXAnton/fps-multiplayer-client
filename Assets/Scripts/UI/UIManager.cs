@@ -24,6 +24,10 @@ public class UIManager : MonoBehaviour
     public GameObject hitDamageTextPrefab;
     public GameObject hitMarkPrefab;
 
+    [Header("Connection")]
+    public GameObject reconnectingTextPrefab;
+    public GameObject couldntReconnectTextPrefab;
+
     private void Awake()
     {
         if (instance == null)

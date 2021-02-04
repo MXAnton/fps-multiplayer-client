@@ -32,6 +32,10 @@ public class ClientSend : MonoBehaviour
     {
         using (Packet _packet = new Packet((int)ClientPackets.requestServer))
         {
+            if (Client.instance == null)
+            {
+                return;
+            }
             _packet.Write(Client.instance.myId);
 
             SendTCPData(_packet);

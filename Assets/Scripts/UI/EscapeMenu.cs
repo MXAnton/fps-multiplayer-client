@@ -21,6 +21,50 @@ public class EscapeMenu : MonoBehaviour
     public Slider musicVolumeSlider;
     public TMP_InputField musicVolumeInputField;
 
+
+    public TMP_InputField screenRefreshRateInputFIeld;
+    public TMP_Dropdown screenFullscreenModeDropdown;
+    public TMP_Dropdown screenResolutionDropdown;
+
+    private void Awake()
+    {
+        Settings.LoadSettings();
+        SetScreenValues();
+
+        // Get all supported resolutions and ad one instance of every supported resolution to the setting dropdown.
+        Resolution[] _resolutions = Screen.resolutions;
+        List<string> _resolutionOptions = new List<string>();
+        for (int i = 0; i < _resolutions.Length; i++)
+        {
+            string _newResolution = _resolutions[i].width + " x " + _resolutions[i].height;
+
+            bool _alreadyExists = false;
+            foreach (string _existingResolution in _resolutionOptions)
+            {
+                if (_newResolution == _existingResolution)
+                {
+                    _alreadyExists = true;
+                    break;
+                }
+            }
+
+            if (_alreadyExists == false)
+            {
+                _resolutionOptions.Add(_newResolution);
+
+                if (_newResolution == Settings.screenWidth + " x " + Settings.screenHeight)
+                {
+                    screenResolutionDropdown.value = _resolutionOptions.Count;
+                }
+            }
+        }
+        screenResolutionDropdown.ClearOptions();
+        screenResolutionDropdown.AddOptions(_resolutionOptions);
+
+        SetFullscreenModeDropdown();
+        screenRefreshRateInputFIeld.text = Settings.refreshRate + "";
+    }
+
     private void Start()
     {
         sensivitySlider.value = Settings.sensivity;
@@ -135,6 +179,80 @@ public class EscapeMenu : MonoBehaviour
 
         ApplySettings();
     }
+
+
+    private void SetFullscreenModeDropdown()
+    {
+        switch (Settings.fullscreenMode)
+        {
+            case FullScreenMode.Windowed:
+                screenFullscreenModeDropdown.value = 0;
+                break;
+            case FullScreenMode.MaximizedWindow:
+                screenFullscreenModeDropdown.value = 1;
+                break;
+            case FullScreenMode.FullScreenWindow:
+                screenFullscreenModeDropdown.value = 2;
+                break;
+            default:
+                screenFullscreenModeDropdown.value = 3;
+                break;
+        }
+    }
+    public void OnFullscreenModeChange()
+    {
+        switch (screenFullscreenModeDropdown.value)
+        {
+            case 0:
+                Settings.fullscreenMode = FullScreenMode.Windowed;
+                break;
+            case 1:
+                Settings.fullscreenMode = FullScreenMode.MaximizedWindow;
+                break;
+            case 2:
+                Settings.fullscreenMode = FullScreenMode.FullScreenWindow;
+                break;
+            default:
+                Settings.fullscreenMode = FullScreenMode.ExclusiveFullScreen;
+                break;
+        }
+
+        SetScreenValues();
+    }
+
+    public void OnResolutionChange()
+    {
+        string _screenResolutionDropdownText = screenResolutionDropdown.captionText.text.Replace(" ", string.Empty);
+        string[] _resolution = _screenResolutionDropdownText.Split('x');
+        string _width = _resolution[0];
+        string _height = _resolution[1];
+
+        int.TryParse(_width, out Settings.screenWidth);
+        int.TryParse(_height, out Settings.screenHeight);
+
+        SetScreenValues();
+    }
+
+    public void OnRefreshRateChange()
+    {
+        int _refreshRate;
+        int.TryParse(screenRefreshRateInputFIeld.text, out _refreshRate);
+        if (_refreshRate < 50)
+        {
+            _refreshRate = 50;
+            screenRefreshRateInputFIeld.text = "" + _refreshRate;
+        }
+        Settings.refreshRate = _refreshRate;
+
+        SetScreenValues();
+    }
+
+    public void SetScreenValues()
+    {
+        Screen.SetResolution(Settings.screenWidth, Settings.screenHeight, Settings.fullscreenMode, Settings.refreshRate);
+        ApplySettings();
+    }
+
 
     public void ApplySettings()
     {

@@ -13,6 +13,8 @@ public class PlayerMovementSimulator : MonoBehaviour
 
     public void SimulateNewMovement(Vector3 _serverPosition, float _yVelocity)
     {
+        StopAllCoroutines();
+
         //Debug.Log("Simulate");
         parentCol.enabled = false;
         thisCol.enabled = true;
@@ -29,10 +31,11 @@ public class PlayerMovementSimulator : MonoBehaviour
             playerController.movementRequestsRotations.TryGetValue(i, out Quaternion _rotation);
 
             //clientPredictedMovements.Remove(i);
-            PredictMovement(i, GetInputDirection(_inputs[0], _inputs[1], _inputs[2], _inputs[3]), _inputs[4], _inputs[5], _rotation);
+            StartCoroutine(PredictMovement(i, GetInputDirection(_inputs[0], _inputs[1], _inputs[2], _inputs[3]), _inputs[4], _inputs[5], _rotation));
         }
 
 
+        playerController.playerManager.LerpMove(transform.position);
         playerController.gameObject.transform.rotation = transform.rotation;
         playerController.yVelocity = yVelocity;
         playerController.gameObject.transform.position = transform.position;
@@ -43,7 +46,7 @@ public class PlayerMovementSimulator : MonoBehaviour
 
 
 
-    private void PredictMovement(int _oldClientPredictMovementKey, Vector2 _inputDirection, bool _input4, bool _input5, Quaternion _lookRotation)
+    private IEnumerator PredictMovement(int _oldClientPredictMovementKey, Vector2 _inputDirection, bool _input4, bool _input5, Quaternion _lookRotation)
     {
         transform.rotation = _lookRotation;
 
@@ -113,6 +116,8 @@ public class PlayerMovementSimulator : MonoBehaviour
         {
             playerController.clientPredictedMovements[_oldClientPredictMovementKey] = transform.position;
         }
+
+        yield return new WaitForSeconds(0);
     }
 
 

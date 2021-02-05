@@ -119,7 +119,7 @@ public class PlayerController : MonoBehaviour
         if (GetComponent<PlayerManager>().health > 0)
         {
             SendInputToServer();
-            PredictMovement(0, _inputDirection, inputs[4], inputs[5], transform.rotation);
+            PPPredictMovement(0, _inputDirection, inputs[4], inputs[5], transform.rotation);
         }
     }
 
@@ -133,9 +133,13 @@ public class PlayerController : MonoBehaviour
         nextMovementRequestId++;
     }
 
-    private void PredictMovement(int _oldClientPredictMovementKey, Vector2 _inputDirection, bool _input4, bool _input5, Quaternion _lookRotation)
+    private void PPPredictMovement(int _oldClientPredictMovementKey, Vector2 _inputDirection, bool _input4, bool _input5, Quaternion _lookRotation)
     {
         transform.rotation = _lookRotation;
+
+        //// remove predict
+        //transform.position = serverPositionObject.transform.position;
+        //return;
 
         Vector3 _moveDirection = transform.right * _inputDirection.x + transform.forward * _inputDirection.y;
         _moveDirection *= moveSpeed;
@@ -321,7 +325,7 @@ public class PlayerController : MonoBehaviour
                     //Debug.Log("count == 0 ---- 2");
                     return;
                 }
-
+                //Debug.Log("Simulate New Movement");
                 playerMovementSimulator.SimulateNewMovement(_serverPosition, _yVelocity);
 
                 // Set client position to the correct old server position, and then add the client's new movement PREDICTIONS that the server hasn't handled yet.

@@ -44,7 +44,7 @@ public class PlayerManager : MonoBehaviour
 
     private void Update()
     {
-        LerpMove(transitionToPosition);
+        LerpMove();
     }
 
     public void SetHealth(float _health)
@@ -105,17 +105,15 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    public void LerpMove(Vector3 _toPosition)
+    public void LerpMove()
     {
-        if (playerController != null)
-        { 
-            return;
-        }
+        //if (playerController != null)
+        //{ 
+        //    return;
+        //}
 
 
-        transitionToPosition = _toPosition;
-
-        Vector3 _lerpedPosition =  Vector3.Lerp(transform.position, _toPosition, Time.deltaTime * positionTransitionSpeed);
+        Vector3 _lerpedPosition =  Vector3.Lerp(transform.position, transitionToPosition, Time.deltaTime * positionTransitionSpeed);
 
 
         if (inputs.Length > 2)
@@ -135,6 +133,11 @@ public class PlayerManager : MonoBehaviour
 
         transform.position = _lerpedPosition;
 
+
+        if (playerController != null)
+        {
+            return;
+        }
 
         // Lerp move head
         head.localEulerAngles = new Vector2(headXRotation, head.localEulerAngles.y);

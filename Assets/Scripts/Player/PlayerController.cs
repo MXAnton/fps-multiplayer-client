@@ -119,7 +119,7 @@ public class PlayerController : MonoBehaviour
         if (GetComponent<PlayerManager>().health > 0)
         {
             SendInputToServer();
-            PPPredictMovement(0, _inputDirection, inputs[4], inputs[5], transform.rotation);
+            PredictMovement(0, _inputDirection, inputs[4], inputs[5], transform.rotation);
         }
     }
 
@@ -133,7 +133,7 @@ public class PlayerController : MonoBehaviour
         nextMovementRequestId++;
     }
 
-    private void PPPredictMovement(int _oldClientPredictMovementKey, Vector2 _inputDirection, bool _input4, bool _input5, Quaternion _lookRotation)
+    private void PredictMovement(int _oldClientPredictMovementKey, Vector2 _inputDirection, bool _input4, bool _input5, Quaternion _lookRotation)
     {
         transform.rotation = _lookRotation;
 
@@ -176,16 +176,13 @@ public class PlayerController : MonoBehaviour
 
 
         // If something i in from of the player with less distance than _moveDirection, don't move.
-        if (Physics.Raycast(transform.position, _moveDirection, out RaycastHit _hit, Vector3.Distance(Vector3.zero, _moveDirection), discludePlayer, QueryTriggerInteraction.Ignore))
+        //if (Physics.Raycast(transform.position, _moveDirection, out RaycastHit _hit, Vector3.Distance(Vector3.zero, _moveDirection), discludePlayer, QueryTriggerInteraction.Ignore))
+        //{
+        //    _moveDirection = Vector3.zero;
+        //}
+        if (CollisionInOffset(_moveDirection / bodyCollider.radius))
         {
-            //Debug.Log("movedir sqrMagnitude: " + Vector3.Distance(Vector3.zero, _moveDirection));
-            //Debug.Log("hit distance: " + _hit.distance);
-            //float _maxDistanceAbleToMove = Vector3.Distance(Vector3.zero, _moveDirection) / _hit.distance;
-
-            _moveDirection = Vector3.zero;
-            //_moveDirection = new Vector3(_moveDirection.x / _maxDistanceAbleToMove,
-            //                                _moveDirection.y / _maxDistanceAbleToMove,
-            //                                    _moveDirection.z / _maxDistanceAbleToMove);
+            //_moveDirection = Vector3.zero;
         }
 
 
@@ -206,7 +203,7 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        //GetComponent<PlayerManager>().LerpMove(transform.position);
+        GetComponent<PlayerManager>().transitionToPosition = transform.position;
 
         if (_oldClientPredictMovementKey == 0)
         {
@@ -217,41 +214,6 @@ public class PlayerController : MonoBehaviour
         {
             clientPredictedMovements[_oldClientPredictMovementKey] = transform.position;
         }
-
-
-
-        //// old
-        //transform.rotation = _lookRotation;
-
-        //Vector3 _moveDirection = transform.right * _inputDirection.x + transform.forward * _inputDirection.y;
-        //_moveDirection *= moveSpeed;
-
-        //if (controller.isGrounded)
-        //{
-        //    yVelocity = 0;
-        //    if (_input4)
-        //    {
-        //        yVelocity = jumpSpeed;
-        //    }
-        //}
-        //yVelocity += gravity;
-        ////Debug.Log(yVelocity);
-
-        //_moveDirection.y = yVelocity;
-        //controller.Move(_moveDirection);
-
-        ////Debug.Log(transform.position);
-        //GetComponent<PlayerManager>().LerpMove(transform.position);
-
-        //if (_oldClientPredictMovementKey == 0)
-        //{
-        //    clientPredictedMovements.Add(nextClientPredictMoveId, transform.position);
-        //    nextClientPredictMoveId++;
-        //}
-        //else
-        //{
-        //    clientPredictedMovements[_oldClientPredictMovementKey] = transform.position;
-        //}
     }
 
     public void MovementRespond(int _latestMovementRespondId, Vector3 _serverPosition, float _yVelocity)
@@ -262,17 +224,16 @@ public class PlayerController : MonoBehaviour
         //Debug.Log("Movement respond");
         if (clientPredictedMovements.TryGetValue(_latestMovementRespondId, out Vector3 _clientPosition))
         {
-            //Debug.Log("LatestRespond ID: " + _latestMovementRespondId);
-            //Debug.Log("LatestSent ID: " + nextMovementRequestId);
+            Debug.Log("Predictment wrong: " + Vector3.Distance(_clientPosition, _serverPosition));
 
             // If too big difference between server player position and client player position, snap the client's player position to the server player position.
             if (Vector3.Distance(_clientPosition, _serverPosition) > maxMovementPredictionWrongForce)
             {
                 //Debug.Log("Snap client to server pos");
+                GetComponent<PlayerManager>().transitionToPosition = _serverPosition;
                 clientPredictedMovements[_latestMovementRespondId] = _serverPosition;
                 transform.position = _serverPosition;
                 yVelocity = _yVelocity;
-                GetComponent<PlayerManager>().LerpMove(_serverPosition);
 
                 if (movementRequestsInputs.Count == 0)
                 {
@@ -294,7 +255,7 @@ public class PlayerController : MonoBehaviour
             else if (Vector3.Distance(_clientPosition, _serverPosition) > maxMovementPredictionWrong)
             {
                 //Debug.Log("!Client predicted pos != servers client pos!");
-
+                Debug.Log("maxMovementpredictwrong, not force");
 
                 // Set movement simulation client player position to the correct old server position, and then simulate the client's new movement PREDICTIONS that the server hasn't handled yet.
                 // Last of all, set the real client player position to the new correct simulated position.
@@ -320,9 +281,10 @@ public class PlayerController : MonoBehaviour
                 }
                 if (movementRequestsInputs.Count == 0)
                 {
-                    transform.position = _serverPosition;
+                    playerManager.transitionToPosition = _serverPosition;
+                    //transform.position = _serverPosition;
                     bodyCollider.enabled = true;
-                    //Debug.Log("count == 0 ---- 2");
+                    Debug.LogWarning("count == 0 ---- 2");
                     return;
                 }
                 //Debug.Log("Simulate New Movement");
@@ -391,6 +353,50 @@ public class PlayerController : MonoBehaviour
                 transform.position = transform.position + penetrationVector;
             }
         }
+
+
+        //// Check with head collider
+        //overlaps = new Collider[4];
+        //num = Physics.OverlapSphereNonAlloc(transform.TransformPoint(headCollider.center), headCollider.radius, overlaps, discludePlayer, QueryTriggerInteraction.UseGlobal);
+
+        //for (int i = 0; i < num; i++)
+        //{
+        //    Transform t = overlaps[i].transform;
+        //    Vector3 dir;
+        //    float dist;
+
+        //    if (Physics.ComputePenetration(headCollider, transform.position, transform.rotation, overlaps[i], t.position, t.rotation, out dir, out dist))
+        //    {
+        //        Vector3 penetrationVector = dir * dist;
+        //        transform.position = transform.position + penetrationVector;
+        //    }
+        //}
+    }
+    private bool CollisionInOffset(Vector3 _offset)
+    {
+        // Check with body collider
+        Collider[] overlaps = new Collider[10];
+        int num = Physics.OverlapSphereNonAlloc(transform.TransformPoint(bodyCollider.center) + _offset, bodyCollider.radius, overlaps, discludePlayer, QueryTriggerInteraction.Ignore);
+
+        for (int i = 0; i < num; i++)
+        {
+            if (overlaps[i].gameObject != gameObject)
+            {
+                return true;
+            }
+
+            Transform t = overlaps[i].transform;
+            Vector3 dir;
+            float dist;
+
+            if (Physics.ComputePenetration(bodyCollider, transform.position, transform.rotation, overlaps[i], t.position, t.rotation, out dir, out dist))
+            {
+                Vector3 penetrationVector = dir * dist;
+                transform.position = transform.position + penetrationVector;
+            }
+        }
+
+        return false;
 
 
         //// Check with head collider

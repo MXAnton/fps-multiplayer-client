@@ -93,7 +93,7 @@ MonoBehaviour:
   inputs: 
   headXRotation: 0
   head: {fileID: 0}
-  positionTransitionSpeed: 10
+  positionTransitionSpeed: 100
   transitionToPosition: {x: 0, y: 0, z: 0}
   oldPosition: {x: 0, y: 0, z: 0}
   playerController: {fileID: 2292013522608939814}
@@ -123,8 +123,8 @@ MonoBehaviour:
   camPos: {x: 0, y: 0.86, z: 0}
   nextMovementRequestId: 0
   nextClientPredictMoveId: 0
-  maxMovementPredictionWrong: 0.1
-  maxMovementPredictionWrongForce: 1
+  maxMovementPredictionWrong: 0.05
+  maxMovementPredictionWrongForce: 0.3
   serverPositionObject: {fileID: 2548909129915496546, guid: 9bfbca4527fd7cd40a74892c07f157a7, type: 3}
   moveSpeed: 0.233331
   runSpeedMultiplier: 2.5

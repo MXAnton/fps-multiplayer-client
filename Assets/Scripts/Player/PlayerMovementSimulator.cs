@@ -35,10 +35,10 @@ public class PlayerMovementSimulator : MonoBehaviour
         }
 
 
-        playerController.playerManager.LerpMove(transform.position);
+        playerController.playerManager.transitionToPosition = transform.position;
         playerController.gameObject.transform.rotation = transform.rotation;
         playerController.yVelocity = yVelocity;
-        playerController.gameObject.transform.position = transform.position;
+        //playerController.gameObject.transform.position = transform.position;
 
         thisCol.enabled = false;
         parentCol.enabled = true;
@@ -85,9 +85,13 @@ public class PlayerMovementSimulator : MonoBehaviour
 
 
         // If something i in from of the player with less distance than _moveDirection, don't move.
-        if (Physics.Raycast(transform.position, _moveDirection, out RaycastHit _hit, Vector3.Distance(Vector3.zero, _moveDirection), playerController.discludePlayer, QueryTriggerInteraction.Ignore))
+        //if (Physics.Raycast(transform.position, _moveDirection, out RaycastHit _hit, Vector3.Distance(Vector3.zero, _moveDirection), discludePlayer, QueryTriggerInteraction.Ignore))
+        //{
+        //    _moveDirection = Vector3.zero;
+        //}
+        if (CollisionInOffset(_moveDirection / playerController.bodyCollider.radius))
         {
-            _moveDirection = Vector3.zero;
+            //_moveDirection = Vector3.zero;
         }
 
 
@@ -143,6 +147,50 @@ public class PlayerMovementSimulator : MonoBehaviour
                 transform.position = transform.position + penetrationVector;
             }
         }
+    }
+    private bool CollisionInOffset(Vector3 _offset)
+    {
+        // Check with body collider
+        Collider[] overlaps = new Collider[10];
+        int num = Physics.OverlapSphereNonAlloc(transform.TransformPoint(playerController.bodyCollider.center) + _offset, playerController.bodyCollider.radius, overlaps, playerController.discludePlayer, QueryTriggerInteraction.Ignore);
+
+        for (int i = 0; i < num; i++)
+        {
+            if (overlaps[i].gameObject != gameObject)
+            {
+                return true;
+            }
+
+            //Transform t = overlaps[i].transform;
+            //Vector3 dir;
+            //float dist;
+
+            //if (Physics.ComputePenetration(playerController.bodyCollider, transform.position, transform.rotation, overlaps[i], t.position, t.rotation, out dir, out dist))
+            //{
+            //    Vector3 penetrationVector = dir * dist;
+            //    transform.position = transform.position + penetrationVector;
+            //}
+        }
+
+        return false;
+
+
+        //// Check with head collider
+        //overlaps = new Collider[4];
+        //num = Physics.OverlapSphereNonAlloc(transform.TransformPoint(headCollider.center), headCollider.radius, overlaps, discludePlayer, QueryTriggerInteraction.UseGlobal);
+
+        //for (int i = 0; i < num; i++)
+        //{
+        //    Transform t = overlaps[i].transform;
+        //    Vector3 dir;
+        //    float dist;
+
+        //    if (Physics.ComputePenetration(headCollider, transform.position, transform.rotation, overlaps[i], t.position, t.rotation, out dir, out dist))
+        //    {
+        //        Vector3 penetrationVector = dir * dist;
+        //        transform.position = transform.position + penetrationVector;
+        //    }
+        //}
     }
 
     private void GetUpFromGround()

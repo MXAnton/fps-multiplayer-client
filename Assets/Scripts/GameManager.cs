@@ -45,7 +45,7 @@ public class GameManager : MonoBehaviour
         _player.GetComponent<PlayerManager>().Initialize(_id, _username);
         players.Add(_id, _player.GetComponent<PlayerManager>());
 
-        _player.GetComponent<PlayerManager>().LerpMove(_position);
+        _player.GetComponent<PlayerManager>().transitionToPosition = _position;
     }
 
     public void CreateItemSpawner(int _spawnerId, Vector3 _position, bool _hasItem)

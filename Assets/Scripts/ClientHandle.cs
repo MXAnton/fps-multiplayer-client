@@ -47,7 +47,7 @@ public class ClientHandle : MonoBehaviour
 
         if (GameManager.instance.players.TryGetValue(_id, out PlayerManager _player))
         {
-            _player.GetComponent<PlayerController>().SetMovementVars(_gravity, _moveSpeed, _runSpeedMultiplier, _jumpSpeed);
+            _player.playerMovementController.SetMovementVars(_gravity, _moveSpeed, _runSpeedMultiplier, _jumpSpeed);
         }
     }
 
@@ -106,7 +106,7 @@ public class ClientHandle : MonoBehaviour
             //{
             //    _player.SetPosition(_position);
             //}
-            _player.GetComponent<PlayerController>().MovementRespond(_lastestMovementRespondId, _position, _yVelocity);
+            _player.playerMovementController.MovementRespond(_lastestMovementRespondId, _position, _yVelocity);
         }
     }
 

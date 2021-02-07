@@ -25,6 +25,7 @@ public class PlayerManager : MonoBehaviour
     public Vector3 oldPosition;
 
     public PlayerController playerController;
+    public PlayerMovementController playerMovementController;
 
 
     public Transform shootOrigin;
@@ -59,10 +60,9 @@ public class PlayerManager : MonoBehaviour
 
     public void Die()
     {
-        if (playerController != null)
+        if (playerMovementController != null)
         {
-            //playerController.controller.enabled = false;
-            playerController.clientPredictedMovements.Clear();
+            playerMovementController.clientPredictedMovements.Clear();
         }
         model.SetActive(false);
     }
@@ -134,7 +134,7 @@ public class PlayerManager : MonoBehaviour
         transform.position = _lerpedPosition;
 
 
-        if (playerController != null)
+        if (playerMovementController != null)
         {
             return;
         }
@@ -145,21 +145,13 @@ public class PlayerManager : MonoBehaviour
 
     public void SetPosition(Vector3 _toPosition)
     {
-        if (playerController != null)
+        if (playerMovementController != null)
         {
-            playerController.clientPredictedMovements.Clear();
-            playerController.movementRequestsInputs.Clear();
-            playerController.movementRequestsRotations.Clear();
-
-            //playerController.controller.enabled = false;
-            //transform.position = _toPosition;
-            //playerController.controller.enabled = true;
-            playerController.serverPositionObject.transform.position = _toPosition;
+            playerMovementController.clientPredictedMovements.Clear();
+            playerMovementController.movementRequestsInputs.Clear();
+            playerMovementController.movementRequestsRotations.Clear();
+            playerMovementController.serverPositionObject.transform.position = _toPosition;
         }
-        //else
-        //{
-        //    transform.position = _toPosition;
-        //}
         transform.position = _toPosition;
     }
 

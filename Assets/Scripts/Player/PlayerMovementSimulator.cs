@@ -5,9 +5,9 @@ using UnityEngine;
 
 public class PlayerMovementSimulator : MonoBehaviour
 {
-    public PlayerController playerController;
-    public CapsuleCollider parentCol;
-    public CapsuleCollider thisCol;
+    public PlayerMovementController playerMovementController;
+    public CapsuleCollider realPlayerCol;
+    public CapsuleCollider simulatorCol;
 
     private float yVelocity;
 
@@ -15,33 +15,30 @@ public class PlayerMovementSimulator : MonoBehaviour
     {
         StopAllCoroutines();
 
-        //Debug.Log("Simulate");
-        parentCol.enabled = false;
-        thisCol.enabled = true;
+        realPlayerCol.enabled = false;
+        realPlayerCol.enabled = true;
 
         transform.position = _serverPosition;
         yVelocity = _yVelocity;
 
         // Now add the client's new movement predictions
-        int _minimumKey = playerController.movementRequestsInputs.Keys.Min();
-        int _maximumKey = playerController.movementRequestsInputs.Keys.Max();
+        int _minimumKey = playerMovementController.movementRequestsInputs.Keys.Min();
+        int _maximumKey = playerMovementController.movementRequestsInputs.Keys.Max();
         for (int i = _minimumKey; i <= _maximumKey; i++)
         {
-            playerController.movementRequestsInputs.TryGetValue(i, out bool[] _inputs);
-            playerController.movementRequestsRotations.TryGetValue(i, out Quaternion _rotation);
+            playerMovementController.movementRequestsInputs.TryGetValue(i, out bool[] _inputs);
+            playerMovementController.movementRequestsRotations.TryGetValue(i, out Quaternion _rotation);
 
-            //clientPredictedMovements.Remove(i);
             StartCoroutine(PredictMovement(i, GetInputDirection(_inputs[0], _inputs[1], _inputs[2], _inputs[3]), _inputs[4], _inputs[5], _rotation));
         }
 
 
-        playerController.playerManager.transitionToPosition = transform.position;
-        playerController.gameObject.transform.rotation = transform.rotation;
-        playerController.yVelocity = yVelocity;
-        //playerController.gameObject.transform.position = transform.position;
+        playerMovementController.playerManager.transitionToPosition = transform.position;
+        playerMovementController.gameObject.transform.rotation = transform.rotation;
+        playerMovementController.yVelocity = yVelocity;
 
-        thisCol.enabled = false;
-        parentCol.enabled = true;
+        realPlayerCol.enabled = false;
+        realPlayerCol.enabled = true;
     }
 
 
@@ -51,26 +48,21 @@ public class PlayerMovementSimulator : MonoBehaviour
         transform.rotation = _lookRotation;
 
         Vector3 _moveDirection = transform.right * _inputDirection.x + transform.forward * _inputDirection.y;
-        _moveDirection *= playerController.moveSpeed;
+        _moveDirection *= playerMovementController.moveSpeed;
         if (_input5)
         {
-            _moveDirection *= playerController.runSpeedMultiplier;
-            //playerController.camTransform.GetComponent<CameraController>().SetFieldOfView(FieldOfViewState.running);
+            _moveDirection *= playerMovementController.runSpeedMultiplier;
         }
-        //else
-        //{
-        //    playerController.camTransform.GetComponent<CameraController>().SetFieldOfView(FieldOfViewState.normal);
-        //}
 
         if (IsGrounded())
         {
             yVelocity = 0;
             if (_input4)
             {
-                yVelocity = playerController.jumpSpeed;
+                yVelocity = playerMovementController.jumpSpeed;
             }
         }
-        yVelocity += playerController.gravity;
+        yVelocity += playerMovementController.gravity;
         if (yVelocity > 0)
         {
             // If moving upwards, make sure the player doesn't touch roof. If player touch roof, set yVelocity to 0 to make sure that the player doesn't "slide" around in the roof.
@@ -89,7 +81,7 @@ public class PlayerMovementSimulator : MonoBehaviour
         //{
         //    _moveDirection = Vector3.zero;
         //}
-        if (CollisionInOffset(_moveDirection / playerController.bodyCollider.radius))
+        if (CollisionInOffset(_moveDirection / playerMovementController.bodyCollider.radius))
         {
             //_moveDirection = Vector3.zero;
         }
@@ -113,12 +105,12 @@ public class PlayerMovementSimulator : MonoBehaviour
 
         if (_oldClientPredictMovementKey == 0)
         {
-            playerController.clientPredictedMovements.Add(playerController.nextClientPredictMoveId, transform.position);
-            playerController.nextClientPredictMoveId++;
+            playerMovementController.clientPredictedMovements.Add(playerMovementController.nextClientPredictMoveId, transform.position);
+            playerMovementController.nextClientPredictMoveId++;
         }
         else
         {
-            playerController.clientPredictedMovements[_oldClientPredictMovementKey] = transform.position;
+            playerMovementController.clientPredictedMovements[_oldClientPredictMovementKey] = transform.position;
         }
 
         yield return new WaitForSeconds(0);
@@ -129,7 +121,8 @@ public class PlayerMovementSimulator : MonoBehaviour
     {
         // Check with body collider
         Collider[] overlaps = new Collider[10];
-        int num = Physics.OverlapSphereNonAlloc(transform.TransformPoint(playerController.bodyCollider.center), playerController.bodyCollider.radius, overlaps, playerController.discludePlayer, QueryTriggerInteraction.Ignore);
+        int num = Physics.OverlapSphereNonAlloc(transform.TransformPoint(playerMovementController.bodyCollider.center), playerMovementController.bodyCollider.radius
+                                                    , overlaps, playerMovementController.discludePlayer, QueryTriggerInteraction.Ignore);
 
         for (int i = 0; i < num; i++)
         {
@@ -141,7 +134,7 @@ public class PlayerMovementSimulator : MonoBehaviour
             Vector3 dir;
             float dist;
 
-            if (Physics.ComputePenetration(playerController.bodyCollider, transform.position, transform.rotation, overlaps[i], t.position, t.rotation, out dir, out dist))
+            if (Physics.ComputePenetration(playerMovementController.bodyCollider, transform.position, transform.rotation, overlaps[i], t.position, t.rotation, out dir, out dist))
             {
                 Vector3 penetrationVector = dir * dist;
                 transform.position = transform.position + penetrationVector;
@@ -152,7 +145,8 @@ public class PlayerMovementSimulator : MonoBehaviour
     {
         // Check with body collider
         Collider[] overlaps = new Collider[10];
-        int num = Physics.OverlapSphereNonAlloc(transform.TransformPoint(playerController.bodyCollider.center) + _offset, playerController.bodyCollider.radius, overlaps, playerController.discludePlayer, QueryTriggerInteraction.Ignore);
+        int num = Physics.OverlapSphereNonAlloc(transform.TransformPoint(playerMovementController.bodyCollider.center) + _offset, playerMovementController.bodyCollider.radius
+                                                        , overlaps, playerMovementController.discludePlayer, QueryTriggerInteraction.Ignore);
 
         for (int i = 0; i < num; i++)
         {
@@ -173,24 +167,6 @@ public class PlayerMovementSimulator : MonoBehaviour
         }
 
         return false;
-
-
-        //// Check with head collider
-        //overlaps = new Collider[4];
-        //num = Physics.OverlapSphereNonAlloc(transform.TransformPoint(headCollider.center), headCollider.radius, overlaps, discludePlayer, QueryTriggerInteraction.UseGlobal);
-
-        //for (int i = 0; i < num; i++)
-        //{
-        //    Transform t = overlaps[i].transform;
-        //    Vector3 dir;
-        //    float dist;
-
-        //    if (Physics.ComputePenetration(headCollider, transform.position, transform.rotation, overlaps[i], t.position, t.rotation, out dir, out dist))
-        //    {
-        //        Vector3 penetrationVector = dir * dist;
-        //        transform.position = transform.position + penetrationVector;
-        //    }
-        //}
     }
 
     private void GetUpFromGround()
@@ -198,9 +174,9 @@ public class PlayerMovementSimulator : MonoBehaviour
         float _distanceAbovePlayer = GetClearDistanceAbovePlayer();
 
         // Store all correct raycast hits and store the smallestHitDistance
-        float _smallestHitDistance = playerController.stepHeight + 0.05f;
-        Ray _downRay = new Ray(new Vector3(transform.position.x, transform.position.y - (playerController.height / 2 - playerController.stepHeight), transform.position.z), -Vector3.up);
-        RaycastHit[] _hits = Physics.RaycastAll(_downRay, playerController.stepHeight + 0.5f, playerController.discludePlayer, QueryTriggerInteraction.Ignore);
+        float _smallestHitDistance = playerMovementController.stepHeight + 0.05f;
+        Ray _downRay = new Ray(new Vector3(transform.position.x, transform.position.y - (playerMovementController.height / 2 - playerMovementController.stepHeight), transform.position.z), -Vector3.up);
+        RaycastHit[] _hits = Physics.RaycastAll(_downRay, playerMovementController.stepHeight + 0.5f, playerMovementController.discludePlayer, QueryTriggerInteraction.Ignore);
         if (_hits != null)
         {
             foreach (RaycastHit _hit in _hits)
@@ -216,9 +192,9 @@ public class PlayerMovementSimulator : MonoBehaviour
         }
 
         // Check if the smallestHitDistance is < stepHeight + 0.05f. If so, calculate the distance to move up
-        if (_smallestHitDistance < playerController.stepHeight + 0.05f)
+        if (_smallestHitDistance < playerMovementController.stepHeight + 0.05f)
         {
-            float _distanceToMoveUp = playerController.stepHeight + 0.05f - _smallestHitDistance;
+            float _distanceToMoveUp = playerMovementController.stepHeight + 0.05f - _smallestHitDistance;
             // If distanceToMoveUp > the clear distance above the player, set distanceToMoveUp to distanceAbovePlayer.
             if (_distanceToMoveUp > _distanceAbovePlayer)
             {
@@ -234,11 +210,11 @@ public class PlayerMovementSimulator : MonoBehaviour
         float _distanceAbovePlayer = GetClearDistanceAbovePlayer();
 
         // Store all correct raycast hits and store the smallestHitDistance
-        float _smallestHitDistance = playerController.stepHeight + 0.05f;
-        Vector3 _raycastPosWithOffset = new Vector3(transform.position.x, transform.position.y - (playerController.height / 2 - playerController.stepHeight), transform.position.z);
-        _raycastPosWithOffset -= _direction * playerController.stepSearchOffset;
+        float _smallestHitDistance = playerMovementController.stepHeight + 0.05f;
+        Vector3 _raycastPosWithOffset = new Vector3(transform.position.x, transform.position.y - (playerMovementController.height / 2 - playerMovementController.stepHeight), transform.position.z);
+        _raycastPosWithOffset -= _direction * playerMovementController.stepSearchOffset;
         Ray _downRayInFront = new Ray(_raycastPosWithOffset, -Vector3.up);
-        RaycastHit[] _hits = Physics.RaycastAll(_downRayInFront, playerController.stepHeight + 0.5f, playerController.discludePlayer, QueryTriggerInteraction.Ignore);
+        RaycastHit[] _hits = Physics.RaycastAll(_downRayInFront, playerMovementController.stepHeight + 0.5f, playerMovementController.discludePlayer, QueryTriggerInteraction.Ignore);
         if (_hits != null)
         {
             foreach (RaycastHit _hit in _hits)
@@ -253,9 +229,9 @@ public class PlayerMovementSimulator : MonoBehaviour
             }
         }
         // Check if the smallestHitDistance is < stepHeight + 0.05f. If so, calculate the distance to move up
-        if (_smallestHitDistance < playerController.stepHeight + 0.05f)
+        if (_smallestHitDistance < playerMovementController.stepHeight + 0.05f)
         {
-            float _distanceToMoveUp = playerController.stepHeight + 0.05f - _smallestHitDistance;
+            float _distanceToMoveUp = playerMovementController.stepHeight + 0.05f - _smallestHitDistance;
             // If distanceToMoveUp > the clear distance above the player, set distanceToMoveUp to distanceAbovePlayer.
             if (_distanceToMoveUp > _distanceAbovePlayer)
             {
@@ -269,10 +245,10 @@ public class PlayerMovementSimulator : MonoBehaviour
 
     private float GetClearDistanceAbovePlayer()
     {
-        float _newDistanceToCeiling = playerController.height * 5;
+        float _newDistanceToCeiling = playerMovementController.height * 5;
 
         Ray _upRay = new Ray(transform.position, Vector3.up);
-        RaycastHit[] _hits = Physics.RaycastAll(_upRay, playerController.height * 5, playerController.discludePlayer, QueryTriggerInteraction.Ignore);
+        RaycastHit[] _hits = Physics.RaycastAll(_upRay, playerMovementController.height * 5, playerMovementController.discludePlayer, QueryTriggerInteraction.Ignore);
         if (_hits != null)
         {
             float _smallestHitDistance = _newDistanceToCeiling;
@@ -289,7 +265,7 @@ public class PlayerMovementSimulator : MonoBehaviour
             _newDistanceToCeiling = _smallestHitDistance;
         }
 
-        _newDistanceToCeiling -= playerController.height / 2;
+        _newDistanceToCeiling -= playerMovementController.height / 2;
 
         return _newDistanceToCeiling;
     }
@@ -298,8 +274,8 @@ public class PlayerMovementSimulator : MonoBehaviour
     {
         bool _isGrounded = false;
         RaycastHit[] _hits;
-        _hits = Physics.RaycastAll(new Vector3(transform.position.x, transform.position.y - (playerController.height / 2 - playerController.stepHeight), transform.position.z), -Vector3.up,
-                                                playerController.stepHeight + 0.1f, playerController.groundedDisclude, QueryTriggerInteraction.Ignore);
+        _hits = Physics.RaycastAll(new Vector3(transform.position.x, transform.position.y - (playerMovementController.height / 2 - playerMovementController.stepHeight), transform.position.z), -Vector3.up,
+                                                playerMovementController.stepHeight + 0.1f, playerMovementController.groundedDisclude, QueryTriggerInteraction.Ignore);
 
         for (int i = 0; i < _hits.Length; i++)
         {
@@ -311,15 +287,14 @@ public class PlayerMovementSimulator : MonoBehaviour
         }
 
         return _isGrounded;
-        //return Physics.Raycast(transform.position, -Vector3.up, distToGround + 0.1f);
     }
     private bool IsGroundedInFront(Vector3 _direction)
     {
         bool _isGrounded = false;
-        Vector3 _raycastPos = new Vector3(transform.position.x, transform.position.y - (playerController.height / 2 - playerController.stepHeight));
-        _raycastPos += _direction * playerController.stepSearchOffset;
+        Vector3 _raycastPos = new Vector3(transform.position.x, transform.position.y - (playerMovementController.height / 2 - playerMovementController.stepHeight));
+        _raycastPos += _direction * playerMovementController.stepSearchOffset;
         RaycastHit[] _hits;
-        _hits = Physics.RaycastAll(_raycastPos, -Vector3.up, playerController.stepHeight + 0.1f, playerController.groundedDisclude, QueryTriggerInteraction.Ignore);
+        _hits = Physics.RaycastAll(_raycastPos, -Vector3.up, playerMovementController.stepHeight + 0.1f, playerMovementController.groundedDisclude, QueryTriggerInteraction.Ignore);
 
         for (int i = 0; i < _hits.Length; i++)
         {

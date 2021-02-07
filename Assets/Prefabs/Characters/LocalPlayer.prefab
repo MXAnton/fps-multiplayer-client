@@ -39,8 +39,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7835103522697921694}
-  - component: {fileID: 8272657087765339585}
   - component: {fileID: 2292013522608939814}
+  - component: {fileID: 8272657087765339585}
+  - component: {fileID: -1655966655892881153}
   - component: {fileID: -1156626443977677737}
   - component: {fileID: 3600432833448676210}
   - component: {fileID: 563700217455363185}
@@ -68,6 +69,22 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2292013522608939814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1978252611658021114}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19ee9750596306a49b53421bf1983402, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerManager: {fileID: 8272657087765339585}
+  cameraPrefab: {fileID: 8104295188902788564, guid: 99a7e2751a9938944be238dfb541f585, type: 3}
+  camTransform: {fileID: 0}
+  camPos: {x: 0, y: 0.86, z: 0}
 --- !u!114 &8272657087765339585
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -97,13 +114,14 @@ MonoBehaviour:
   transitionToPosition: {x: 0, y: 0, z: 0}
   oldPosition: {x: 0, y: 0, z: 0}
   playerController: {fileID: 2292013522608939814}
+  playerMovementController: {fileID: -1655966655892881153}
   shootOrigin: {fileID: 2183304493240764795}
   shootDistance: 100
   audioSource: {fileID: 563700217455363185}
   shootSound: {fileID: 8300000, guid: cbe4c60058c418845b80da390657fd86, type: 3}
   bulletLinePrefab: {fileID: 6778754854928673374, guid: eadaa9096ad03374baf36b70fa919a44, type: 3}
   bulletHolePrefab: {fileID: 6400058790378706583, guid: 6994484b375c02d4db03da79450e074c, type: 3}
---- !u!114 &2292013522608939814
+--- !u!114 &-1655966655892881153
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -112,31 +130,29 @@ MonoBehaviour:
   m_GameObject: {fileID: 1978252611658021114}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 19ee9750596306a49b53421bf1983402, type: 3}
+  m_Script: {fileID: 11500000, guid: e34cd5e7e5f83f247b8b61b19715bcd1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   playerManager: {fileID: 8272657087765339585}
+  playerController: {fileID: 2292013522608939814}
   playerMovementSimulatorPrefab: {fileID: 6218199027029499333, guid: 797caf89794e9a64b80c31f0e6a9c393, type: 3}
-  playerMovementSimulator: {fileID: 0}
-  cameraPrefab: {fileID: 8104295188902788564, guid: 99a7e2751a9938944be238dfb541f585, type: 3}
-  camTransform: {fileID: 0}
-  camPos: {x: 0, y: 0.86, z: 0}
   nextMovementRequestId: 0
   nextClientPredictMoveId: 0
-  maxMovementPredictionWrong: 0.05
+  maxMovementPredictionWrong: 0.01
   maxMovementPredictionWrongForce: 0.3
-  serverPositionObject: {fileID: 2548909129915496546, guid: 9bfbca4527fd7cd40a74892c07f157a7, type: 3}
-  moveSpeed: 0.233331
-  runSpeedMultiplier: 2.5
-  jumpSpeed: 0.199998
-  gravity: -0.001
+  serverPositionObjectPrefab: {fileID: 2548909129915496546, guid: 9bfbca4527fd7cd40a74892c07f157a7, type: 3}
+  serverPositionObject: {fileID: 0}
+  moveSpeed: 2.5
+  runSpeedMultiplier: 2
+  jumpSpeed: 3.5
+  gravity: -9.81
   yVelocity: 0
-  height: 1.98
+  height: 2
   stepHeight: 0.5
   stepSearchOffset: 1
   groundedDisclude:
     serializedVersion: 2
-    m_Bits: 275
+    m_Bits: 19
   discludePlayer:
     serializedVersion: 2
     m_Bits: 55

@@ -139,6 +139,19 @@ public class ClientHandle : MonoBehaviour
     public static void PlayerDisconnected(Packet _packet)
     {
         int _id = _packet.ReadInt();
+
+        if (GameManager.instance.players[_id].otherPlayerWeaponController.weaponsHolder.GetComponentInChildren<Weapon>())
+        {
+            // search all weapons in weaponsholder, then drop every weapon
+            Weapon[] _weapons = GameManager.instance.players[_id].otherPlayerWeaponController.weaponsHolder.transform.GetComponentsInChildren<Weapon>(true);
+            foreach (Weapon _weapon in _weapons)
+            {
+                Debug.Log("weapons to drop: " + _weapon.id);
+
+                GameManager.instance.players[_id].otherPlayerWeaponController.DroppedWeapon(_weapon.id);
+            }
+        }
+
         Destroy(GameManager.instance.players[_id].gameObject);
         GameManager.instance.players.Remove(_id);
     }
@@ -161,9 +174,30 @@ public class ClientHandle : MonoBehaviour
     public static void PlayerShot(Packet _packet)
     {
         int _id = _packet.ReadInt();
+        Vector3 _fireOrigin = _packet.ReadVector3();
         Vector3 _viewDirection = _packet.ReadVector3();
+        int _weaponId = _packet.ReadInt();
+        int _ammoInClip = _packet.ReadInt();
+        int _extraAmmo = _packet.ReadInt();
 
-        GameManager.instance.players[_id].Shoot(_viewDirection);
+        bool _thisPlayersShot = false;
+        if (_id == Client.instance.myId)
+        {
+            _thisPlayersShot = true;
+        }
+        GameManager.instance.players[_id].Shoot(_fireOrigin, _viewDirection, _thisPlayersShot, _weaponId, _ammoInClip, _extraAmmo);
+    }
+
+    public static void PlayerReloadDone(Packet _packet)
+    {
+        int _id = _packet.ReadInt();
+        int _weaponId = _packet.ReadInt();
+        int _ammoInClip = _packet.ReadInt();
+        int _extraAmmo = _packet.ReadInt();
+
+        GameManager.instance.weapons[_weaponId].CompleteReload(_ammoInClip, _extraAmmo);
+        //GameManager.instance.players[_id].playerController.weaponsController.weaponUsed = _weapon;
+        //GameManager.instance.players[_id].playerController.weaponsController.weaponsEquiped[_weapon].GetComponent<Weapon>().CompleteReload(_ammoInClip, _extraAmmo);
     }
 
     public static void PlayerHitInfo(Packet _packet)
@@ -296,5 +330,83 @@ public class ClientHandle : MonoBehaviour
         Vector3 _viewDirection = _packet.ReadVector3();
 
         GameManager.instance.enemies[_id].Shoot(_viewDirection);
+    }
+
+
+    public static void SpawnWeapon(Packet _packet)
+    {
+        int _weaponId = _packet.ReadInt();
+        int _weaponType = _packet.ReadInt();
+        Vector3 _position = _packet.ReadVector3();
+        int _currentClipAmmo = _packet.ReadInt();
+        int _currentExtraAmmo = _packet.ReadInt();
+        int _maxClipAmmo = _packet.ReadInt();
+        int _maxExtraAmmo = _packet.ReadInt();
+        float _reloadTime = _packet.ReadFloat();
+        float _autoFireRate = _packet.ReadFloat();
+        float _burstFireRate = _packet.ReadFloat();
+        float _semiFireRate = _packet.ReadFloat();
+        float _fireSpread = _packet.ReadFloat();
+        float _shootDistance = _packet.ReadFloat();
+
+        GameManager.instance.SpawnWeapon(_weaponId, _weaponType, _position, _currentClipAmmo, _currentExtraAmmo, _maxClipAmmo, _maxExtraAmmo, _reloadTime,
+            _autoFireRate, _burstFireRate, _semiFireRate, _fireSpread, _shootDistance);
+    }
+
+    public static void WeaponPositionAndRotation(Packet _packet)
+    {
+        int _weaponId = _packet.ReadInt();
+        Vector3 _position = _packet.ReadVector3();
+        Vector3 _rotation = _packet.ReadVector3();
+
+        if (GameManager.instance.weapons.ContainsKey(_weaponId))
+        {
+            GameManager.instance.weapons[_weaponId].weaponTransform.lerpToPosition = _position;
+            GameManager.instance.weapons[_weaponId].weaponTransform.lerpToRotation = _rotation;
+        }
+    }
+
+    public static void PlayerPickedWeapon(Packet _packet)
+    {
+        int _whichPlayer = _packet.ReadInt();
+        int _weaponId = _packet.ReadInt();
+        int _weaponType = _packet.ReadInt();
+        int _clipAmmo = _packet.ReadInt();
+        int _extraAmmo = _packet.ReadInt();
+
+        GameManager.instance.players[_whichPlayer].PickedUpWeapon(_weaponId, _weaponType, _clipAmmo, _extraAmmo);
+    }
+
+    public static void PlayerDroppedWeapon(Packet _packet)
+    {
+        int _whichPlayer = _packet.ReadInt();
+        int _weaponId = _packet.ReadInt();
+        int _weaponType = _packet.ReadInt();
+
+        if (GameManager.instance.players.ContainsKey(_whichPlayer))
+        {
+            GameManager.instance.players[_whichPlayer].DroppedWeapon(_weaponId, _weaponType);
+        }
+        else
+        {
+            GameObject _droppedWeapon = GameManager.instance.weapons[_weaponId].gameObject;
+
+            _droppedWeapon.GetComponent<Weapon>().enabled = false;
+            _droppedWeapon.GetComponent<Weapon>().weaponsController = null;
+            _droppedWeapon.transform.parent = null;
+
+            _droppedWeapon.GetComponent<WeaponTransform>().enabled = true;
+
+            _droppedWeapon.SetActive(true);
+        }
+    }
+
+    public static void PlayerWeaponUsed(Packet _packet)
+    {
+        int _whichPlayer = _packet.ReadInt();
+        int _weaponUsed = _packet.ReadInt();
+
+        GameManager.instance.players[_whichPlayer].otherPlayerWeaponController.weaponUsed = _weaponUsed;
+        GameManager.instance.players[_whichPlayer].otherPlayerWeaponController.UpdateWeaponUsed();
     }
 }

@@ -12,7 +12,9 @@ public class CameraController : MonoBehaviour
 {
     private Camera camera;
 
-    public PlayerManager player;
+    public PlayerManager playerManager;
+    public PlayerController playerController; 
+    public PlayerMovementController playerMovementController;
     public float sensivity = 100f;
     public float clampAngle = 85f;
 
@@ -27,7 +29,7 @@ public class CameraController : MonoBehaviour
         camera = GetComponent<Camera>();
 
         verticalRotation = transform.localEulerAngles.x;
-        horizontalRotation = player.transform.eulerAngles.y;
+        horizontalRotation = playerMovementController.transform.eulerAngles.y;
     }
 
     private void Update()
@@ -55,12 +57,12 @@ public class CameraController : MonoBehaviour
         verticalRotation = Mathf.Clamp(verticalRotation, -clampAngle, clampAngle);
 
         transform.localRotation = Quaternion.Euler(verticalRotation, horizontalRotation, 0f);
-        player.transform.rotation = Quaternion.Euler(0f, horizontalRotation, 0f);
+        playerMovementController.transform.rotation = Quaternion.Euler(0f, horizontalRotation, 0f);
     }
 
     private void LerpMove()
     {
-        lerpPosition = Vector3.Lerp(transform.position, player.transform.position + player.GetComponent<PlayerController>().camPos, smoothSpeed);
+        lerpPosition = Vector3.Lerp(transform.position, playerMovementController.transform.position + playerController.camPos, smoothSpeed);
         transform.position = lerpPosition;
     }
 

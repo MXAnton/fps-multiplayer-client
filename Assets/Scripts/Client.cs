@@ -141,6 +141,8 @@ public class Client : MonoBehaviour
         waitingForServerCallback = true;
 
         ClientSend.RequestServer();
+
+        Destroy(_reconnectingTextObject);
     }
 
     public void ServerRespond()
@@ -388,6 +390,7 @@ public class Client : MonoBehaviour
             { (int)ServerPackets.playerHealth, ClientHandle.PlayerHealth },
             { (int)ServerPackets.playerRespawned, ClientHandle.PlayerRespawned },
             { (int)ServerPackets.playerShot, ClientHandle.PlayerShot },
+            { (int)ServerPackets.playerReloadDone, ClientHandle.PlayerReloadDone },
             { (int)ServerPackets.playerHitInfo, ClientHandle.PlayerHitInfo },
             { (int)ServerPackets.playerDeathsAndKills, ClientHandle.PlayerDeathsAndKills },
             { (int)ServerPackets.playerKilled, ClientHandle.PlayerKilled },
@@ -401,7 +404,12 @@ public class Client : MonoBehaviour
             { (int)ServerPackets.enemyPosition, ClientHandle.EnemyPosition },
             { (int)ServerPackets.enemyRotation, ClientHandle.EnemyRotation },
             { (int)ServerPackets.enemyHealth, ClientHandle.EnemyHealth },
-            { (int)ServerPackets.enemyShot, ClientHandle.EnemyShot }
+            { (int)ServerPackets.enemyShot, ClientHandle.EnemyShot },
+            { (int)ServerPackets.spawnWeapon, ClientHandle.SpawnWeapon },
+            { (int)ServerPackets.weaponPositionAndRotation, ClientHandle.WeaponPositionAndRotation },
+            { (int)ServerPackets.playerPickedWeapon, ClientHandle.PlayerPickedWeapon },
+            { (int)ServerPackets.playerDroppedWeapon, ClientHandle.PlayerDroppedWeapon },
+            { (int)ServerPackets.playerWeaponUsed, ClientHandle.PlayerWeaponUsed }
         };
 
         Debug.Log("Initialized packets.");
@@ -409,6 +417,15 @@ public class Client : MonoBehaviour
 
     public void Disconnect()
     {
+        //for (int i = 0; i < 3; i++)
+        //{
+        //    if (GameManager.instance.players[instance.myId].playerController.weaponsController.weaponsEquiped[i] != null)
+        //    {
+        //        ClientSend.PlayerTryDropWeapon(GameManager.instance.players[instance.myId].playerController.weaponsController.weaponsEquiped[i].GetComponent<Weapon>().id,
+        //                                        i, Vector3.zero);
+        //    }
+        //}
+
         StopAllCoroutines();
 
         isConnected = false;

@@ -153,6 +153,7 @@ public class PlayerMovementController : MonoBehaviour
 
 
         Vector3 _newPosition = transform.position + _moveDirection;
+        playerManager.transitionToPosition = _newPosition;
         transform.position = _newPosition;
 
 
@@ -188,7 +189,7 @@ public class PlayerMovementController : MonoBehaviour
 
         if (clientPredictedMovements.TryGetValue(_latestMovementRespondId, out Vector3 _clientPosition))
         {
-            Debug.Log("Predictment wrong: " + Vector3.Distance(_clientPosition, _serverPosition));
+            //Debug.Log("Predictment wrong: " + Vector3.Distance(_clientPosition, _serverPosition));
 
             // If too big difference between server player position and client player position, snap the client's player position to the server player position.
             if (Vector3.Distance(_clientPosition, _serverPosition) > maxMovementPredictionWrongForce)
@@ -217,7 +218,7 @@ public class PlayerMovementController : MonoBehaviour
             }
             else if (Vector3.Distance(_clientPosition, _serverPosition) > maxMovementPredictionWrong)
             {
-                Debug.Log("maxMovementpredictwrong, not force");
+                //Debug.Log("maxMovementpredictwrong, not force");
 
                 // Set movement simulation client player position to the correct old server position, and then simulate the client's new movement PREDICTIONS that the server hasn't handled yet.
                 // Last of all, set the real client player position to the new correct simulated position.
@@ -239,7 +240,7 @@ public class PlayerMovementController : MonoBehaviour
                     playerManager.transitionToPosition = _serverPosition;
                     //transform.position = _serverPosition;
                     bodyCollider.enabled = true;
-                    Debug.LogWarning("count == 0 ---- 2");
+                    //Debug.LogWarning("count == 0 ---- 2");
                     return;
                 }
 

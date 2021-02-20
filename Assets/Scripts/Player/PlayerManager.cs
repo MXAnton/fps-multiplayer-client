@@ -24,8 +24,11 @@ public class PlayerManager : MonoBehaviour
     public Vector3 transitionToPosition;
     public Vector3 oldPosition;
 
+    public Transform usedTransform;
+
     public PlayerController playerController;
     public PlayerMovementController playerMovementController;
+    public OtherPlayerWeaponController otherPlayerWeaponController;
 
 
     public Transform shootOrigin;
@@ -41,11 +44,23 @@ public class PlayerManager : MonoBehaviour
         id = _id;
         username = _username;
         health = maxHealth;
+
+        if (playerMovementController != null)
+        {
+            usedTransform = playerMovementController.transform;
+        }
+        else
+        {
+            usedTransform = transform;
+        }
     }
 
     private void Update()
     {
-        LerpMove();
+        if (playerController == null)
+        {
+            LerpMove();
+        }
     }
 
     public void SetHealth(float _health)
@@ -83,18 +98,52 @@ public class PlayerManager : MonoBehaviour
         //    playerController.controller.enabled = true;
         //}
         SetHealth(maxHealth);
+
+        // search all weapons in weaponsholder, then setup weapons
+        Weapon[] _weapons = new Weapon[0];
+        if (playerController != null)
+        {
+            _weapons = playerController.weaponsController.weaponsHolder.transform.GetComponentsInChildren<Weapon>(true);
+        }
+        else if (otherPlayerWeaponController != null)
+        {
+            _weapons = otherPlayerWeaponController.weaponsHolder.transform.GetComponentsInChildren<Weapon>(true);
+        }
+        foreach (Weapon _weapon in _weapons)
+        {
+            _weapon.reloading = false;
+            _weapon.canFire = true;
+        }
     }
 
-    public void Shoot(Vector3 _viewDirection)
+    public void Shoot(Vector3 _fireOrigin, Vector3 _viewDirection, bool _thisClientsShot, int _weaponId, int _ammoInClip, int _extraAmmo)
     {
-        audioSource.PlayOneShot(shootSound);
+        if (_thisClientsShot == false)
+        {
+            if (GameManager.instance.weapons[_weaponId] != null)
+            {
+                audioSource.PlayOneShot(GameManager.instance.weapons[_weaponId].fireClip);
+            }
+        }
+        GameManager.instance.weapons[_weaponId].currentClipAmmo = _ammoInClip;
+        GameManager.instance.weapons[_weaponId].currentExtraAmmo = _extraAmmo;
 
-        if (Physics.Raycast(shootOrigin.position, _viewDirection, out RaycastHit _hit, shootDistance))
+        if (Physics.Raycast(_fireOrigin, _viewDirection, out RaycastHit _hit, shootDistance))
         {
             LineRenderer _newBulletLine = Instantiate(bulletLinePrefab).GetComponent<LineRenderer>();
-            _newBulletLine.SetPosition(0, shootOrigin.position);
+            if (_thisClientsShot == false)
+            {
+                if (otherPlayerWeaponController.weaponsEquiped[otherPlayerWeaponController.weaponUsed] != null)
+                {
+                    _newBulletLine.SetPosition(0, otherPlayerWeaponController.weaponsEquiped[otherPlayerWeaponController.weaponUsed].GetComponent<Weapon>().bulletSpawnPos.position);
+                }
+            }
+            else
+            {
+                _newBulletLine.SetPosition(0, 
+                    playerController.weaponsController.weaponsEquiped[playerController.weaponsController.weaponUsed].GetComponent<Weapon>().bulletSpawnPos.position);
+            }
             _newBulletLine.SetPosition(1, _hit.point);
-            //_newBulletLine.transform.parent = transform;
 
             if (_hit.transform.tag != "Player" && _hit.transform.tag != "Enemy")
             {
@@ -105,6 +154,30 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
+    public void PickedUpWeapon(int _weaponId, int _weaponType, int _clipAmmo, int _extraAmmo)
+    {
+        if (playerController != null)
+        {
+            playerController.weaponsController.PickedUpWeapon(_weaponId, _weaponType, _clipAmmo, _extraAmmo);
+        }
+        else
+        {
+            otherPlayerWeaponController.PickedUpWeapon(_weaponId, _weaponType, _clipAmmo, _extraAmmo);
+        }
+    }
+
+    public void DroppedWeapon(int _weaponId, int _weaponType)
+    {
+        if (playerController != null)
+        {
+            playerController.weaponsController.DroppedWeapon(_weaponId, _weaponType);
+        }
+        else
+        {
+            otherPlayerWeaponController.DroppedWeapon(_weaponId, _weaponType);
+        }
+    }
+
     public void LerpMove()
     {
         //if (playerController != null)
@@ -112,15 +185,13 @@ public class PlayerManager : MonoBehaviour
         //    return;
         //}
 
-
-        Vector3 _lerpedPosition =  Vector3.Lerp(transform.position, transitionToPosition, Time.deltaTime * positionTransitionSpeed);
-
+        Vector3 _lerpedPosition = Vector3.Lerp(usedTransform.transform.position, transitionToPosition, Time.deltaTime * positionTransitionSpeed);
 
         if (inputs.Length > 2)
         {
-            Vector3 _moveDir = _lerpedPosition - transform.position;
+            Vector3 _moveDir = _lerpedPosition - usedTransform.transform.position;
 
-            Vector3 _localVelocity = transform.InverseTransformDirection(_moveDir);
+            Vector3 _localVelocity = usedTransform.transform.InverseTransformDirection(_moveDir);
             float _forwardSpeed = _localVelocity.z;
             float _rightSpeed = _localVelocity.x;
 
@@ -131,10 +202,10 @@ public class PlayerManager : MonoBehaviour
             animator.SetFloat("MoveY", Mathf.Round(_movementSpeedY * 10) / 10);
         }
 
-        transform.position = _lerpedPosition;
+        usedTransform.transform.position = _lerpedPosition;
 
 
-        if (playerMovementController != null)
+        if (usedTransform != null)
         {
             return;
         }
@@ -152,7 +223,7 @@ public class PlayerManager : MonoBehaviour
             playerMovementController.movementRequestsRotations.Clear();
             playerMovementController.serverPositionObject.transform.position = _toPosition;
         }
-        transform.position = _toPosition;
+        usedTransform.position = _toPosition;
     }
 
     private float MapFloat(float _value, float _minA, float _maxA, float _minB, float _maxB)

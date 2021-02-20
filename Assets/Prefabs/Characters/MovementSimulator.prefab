@@ -58,6 +58,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 330efc0b9eee3c44cb3554af074ea66f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerController: {fileID: 0}
-  parentCol: {fileID: 0}
-  thisCol: {fileID: 6403717794085390071}
+  playerMovementController: {fileID: 0}
+  realPlayerCol: {fileID: 0}
+  simulatorCol: {fileID: 6403717794085390071}

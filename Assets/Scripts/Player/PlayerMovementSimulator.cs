@@ -16,7 +16,7 @@ public class PlayerMovementSimulator : MonoBehaviour
         StopAllCoroutines();
 
         realPlayerCol.enabled = false;
-        realPlayerCol.enabled = true;
+        simulatorCol.enabled = true;
 
         transform.position = _serverPosition;
         yVelocity = _yVelocity;
@@ -37,7 +37,7 @@ public class PlayerMovementSimulator : MonoBehaviour
         playerMovementController.gameObject.transform.rotation = transform.rotation;
         playerMovementController.yVelocity = yVelocity;
 
-        realPlayerCol.enabled = false;
+        simulatorCol.enabled = false;
         realPlayerCol.enabled = true;
     }
 

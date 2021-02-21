@@ -16,6 +16,10 @@ public class UIManager : MonoBehaviour
     private GameObject escapeMenu;
     public bool escapeMenuUp = false;
 
+    [Header("Health")]
+    public GameObject healthShowerHolder;
+    public GameObject healthShower;
+
     [Header("Kills Info")]
     public GameObject killsInfosHolder;
     public GameObject killInfoPrefab;
@@ -97,6 +101,11 @@ public class UIManager : MonoBehaviour
     public void ButtonClicked()
     {
         audioSource.PlayOneShot(buttonClickedSound);
+    }
+
+    public void SetHealthShower(float _scaledHealth)
+    {
+        healthShower.transform.localScale = new Vector2(_scaledHealth, 1);
     }
 
     public void ShowHitDamage(Vector3 _hitPoint, float _hitDamage)

@@ -67,6 +67,12 @@ public class PlayerManager : MonoBehaviour
     {
         health = _health;
 
+        if (playerController != null)
+        {
+            float _mappedHealth = MapFloat(_health, 0, 1, 0, maxHealth);
+            UIManager.instance.SetHealthShower(_mappedHealth);
+        }
+
         if (health <= 0f)
         {
             Die();
@@ -78,6 +84,7 @@ public class PlayerManager : MonoBehaviour
         if (playerMovementController != null)
         {
             playerMovementController.clientPredictedMovements.Clear();
+            UIManager.instance.healthShowerHolder.SetActive(false);
         }
         model.SetActive(false);
     }
@@ -93,10 +100,10 @@ public class PlayerManager : MonoBehaviour
     public void Respawn()
     {
         model.SetActive(true);
-        //if (playerController != null)
-        //{
-        //    playerController.controller.enabled = true;
-        //}
+        if (playerController != null)
+        {
+            UIManager.instance.healthShowerHolder.SetActive(true);
+        }
         SetHealth(maxHealth);
 
         // search all weapons in weaponsholder, then setup weapons

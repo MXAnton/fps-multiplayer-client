@@ -146,7 +146,7 @@ public class ClientHandle : MonoBehaviour
             Weapon[] _weapons = GameManager.instance.players[_id].otherPlayerWeaponController.weaponsHolder.transform.GetComponentsInChildren<Weapon>(true);
             foreach (Weapon _weapon in _weapons)
             {
-                Debug.Log("weapons to drop: " + _weapon.id);
+                //Debug.Log("weapons to drop: " + _weapon.id);
 
                 GameManager.instance.players[_id].otherPlayerWeaponController.DroppedWeapon(_weapon.id);
             }

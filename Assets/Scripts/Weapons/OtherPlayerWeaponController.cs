@@ -11,6 +11,11 @@ public class OtherPlayerWeaponController : MonoBehaviour
     public GameObject[] weaponsEquiped = new GameObject[3]; // 0 = primary, 1 = secondary, 2 = melee
     public int weaponUsed = 0; // 0 = primary, 1 = secondary, 2 = melee
 
+    [Header("Grenade Vars")]
+    public int grenadeCount;
+    public int maxGrenadeCount = 3;
+    //public Transform grenadeThrowOrigin;
+
     public void PickedUpWeapon(int _whichWeapon, int _weaponType, int _clipAmmo, int _extraAmmo)
     {
         GameObject _pickedWeapon = GameManager.instance.weapons[_whichWeapon].gameObject;

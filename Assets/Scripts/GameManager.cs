@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
 
     public Dictionary<int, PlayerManager> players = new Dictionary<int, PlayerManager>();
     public Dictionary<int, ItemSpawner> itemSpawners = new Dictionary<int, ItemSpawner>();
+    public Dictionary<int, GrenadeSpawner> grenadeSpawners = new Dictionary<int, GrenadeSpawner>();
     public Dictionary<int, ProjectileManager> projectiles = new Dictionary<int, ProjectileManager>();
     public Dictionary<int, EnemyManager> enemies = new Dictionary<int, EnemyManager>();
     public Dictionary<int, Weapon> weapons = new Dictionary<int, Weapon>();
@@ -15,6 +16,7 @@ public class GameManager : MonoBehaviour
     public GameObject localPlayerPrefab;
     public GameObject playerPrefab;
     public GameObject itemSpawnerPrefab;
+    public GameObject grenadeSpawnerPrefab;
     public GameObject projectilePrefab;
     public GameObject enemyPrefab;
 
@@ -57,6 +59,13 @@ public class GameManager : MonoBehaviour
         GameObject _spawner = Instantiate(itemSpawnerPrefab, _position, itemSpawnerPrefab.transform.rotation);
         _spawner.GetComponent<ItemSpawner>().Initialize(_spawnerId, _hasItem);
         itemSpawners.Add(_spawnerId, _spawner.GetComponent<ItemSpawner>());
+    }
+
+    public void CreateGrenadeSpawner(int _spawnerId, Vector3 _position, bool _hasGrenade)
+    {
+        GameObject _spawner = Instantiate(grenadeSpawnerPrefab, _position, grenadeSpawnerPrefab.transform.rotation);
+        _spawner.GetComponent<GrenadeSpawner>().Initialize(_spawnerId, _hasGrenade);
+        grenadeSpawners.Add(_spawnerId, _spawner.GetComponent<GrenadeSpawner>());
     }
 
     public void SpawnProjectile(int _id, Vector3 _position)

@@ -17,6 +17,11 @@ public class WeaponsController : MonoBehaviour
     public GameObject[] weaponsEquiped = new GameObject[3]; // 0 = primary, 1 = secondary, 2 = melee
     public int weaponUsed = 0; // 0 = primary, 1 = secondary, 2 = melee
 
+    [Header("Grenade Vars")]
+    public int grenadeCount;
+    public int maxGrenadeCount = 3;
+    //public Transform grenadeThrowOrigin;
+
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
@@ -57,16 +62,36 @@ public class WeaponsController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.E))
         {
+            if (playerManager.health <= 0 || UIManager.instance.escapeMenuUp)
+            {
+                return;
+            }
+
             // Try pickup item
             ClientSend.PlayerTryPickUpWeapon(playerController.camTransform.forward);
         }
-        if (Input.GetKeyDown(KeyCode.G))
+        if (Input.GetKeyDown(KeyCode.Q))
         {
+            if (playerManager.health <= 0 || UIManager.instance.escapeMenuUp)
+            {
+                return;
+            }
+
             // Try drop item
             if (weaponsEquiped[weaponUsed] != null)
             {
                 ClientSend.PlayerTryDropWeapon(weaponsEquiped[weaponUsed].GetComponent<Weapon>().id, weaponUsed, weaponsEquiped[weaponUsed].transform.position, weaponsEquiped[weaponUsed].transform.eulerAngles, playerController.camTransform.forward);
             }
+        }
+
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            if (playerManager.health <= 0 || UIManager.instance.escapeMenuUp)
+            {
+                return;
+            }
+
+            ClientSend.PlayerThrowItem(playerController.camTransform.forward);
         }
     }
 

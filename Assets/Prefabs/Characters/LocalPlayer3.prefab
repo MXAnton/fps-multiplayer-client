@@ -479,6 +479,8 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   weaponUsed: 1
+  grenadeCount: 3
+  maxGrenadeCount: 3
 --- !u!1 &8050927561578909297
 GameObject:
   m_ObjectHideFlags: 0

@@ -75,6 +75,11 @@ public class Weapon : MonoBehaviour
 
     private void Update()
     {
+        if (GameManager.instance.players[Client.instance.myId].health <= 0 || UIManager.instance.escapeMenuUp)
+        {
+            return;
+        }
+
         if (Input.GetKeyDown(KeyCode.V) && enabledFireModes.Length > 1)
         {
             ChangeFireMode();

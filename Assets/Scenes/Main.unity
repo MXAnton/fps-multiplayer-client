@@ -478,7 +478,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_BoundingSphereOverride: {x: 2.849e-42, y: 0, z: 0, w: -3.119852}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -842,6 +842,7 @@ MonoBehaviour:
   localPlayerPrefab: {fileID: 8050927561578909297, guid: cf34dd70111de9047842a641a6a8a301, type: 3}
   playerPrefab: {fileID: 1978252611658021114, guid: 27a51e420ddcad940a036a5cb8ed5795, type: 3}
   itemSpawnerPrefab: {fileID: 6719743922093764870, guid: 7c995a6818b7b4b4e81ceeae15d56684, type: 3}
+  grenadeSpawnerPrefab: {fileID: 3055794862873682988, guid: cec58cff0b6e41e42bdb57480637e772, type: 3}
   projectilePrefab: {fileID: 8738062309733660458, guid: aae268375566779459a751e1aaded38e, type: 3}
   enemyPrefab: {fileID: 1978252611658021114, guid: 03dfaf96d37e2f84b9907d7e286d998e, type: 3}
   weaponsPrefabs:

@@ -250,14 +250,60 @@ public class ClientHandle : MonoBehaviour
         GameManager.instance.players[_byPlayer].itemCount++;
     }
 
+    public static void CreateGrenadeSpawner(Packet _packet)
+    {
+        int _spawnerId = _packet.ReadInt();
+        Vector3 _spawnerPosition = _packet.ReadVector3();
+        bool _hasGrenade = _packet.ReadBool();
+
+        GameManager.instance.CreateGrenadeSpawner(_spawnerId, _spawnerPosition, _hasGrenade);
+    }
+    public static void GrenadeSpawned(Packet _packet)
+    {
+        int _spawnerId = _packet.ReadInt();
+
+        GameManager.instance.grenadeSpawners[_spawnerId].GrenadeSpawned();
+    }
+    public static void GrenadePickedUp(Packet _packet)
+    {
+        int _spawnerId = _packet.ReadInt();
+        int _projectileCount = _packet.ReadInt();
+        int _byPlayer = _packet.ReadInt();
+
+        GameManager.instance.grenadeSpawners[_spawnerId].GrenadePickedUp();
+
+        if (_byPlayer == Client.instance.myId)
+        {
+            GameManager.instance.players[_byPlayer].playerController.weaponsController.grenadeCount = _projectileCount;
+        }
+        else
+        {
+            GameManager.instance.players[_byPlayer].otherPlayerWeaponController.grenadeCount = _projectileCount;
+        }
+
+        WeaponUI.instance.SetGrenadeAmountText(_projectileCount);
+    }
+
     public static void SpawnProjectile(Packet _packet)
     {
         int _projectileId = _packet.ReadInt();
+        int _projectileCount = _packet.ReadInt();
         Vector3 _position = _packet.ReadVector3();
         int _thrownByPlayer = _packet.ReadInt();
 
         GameManager.instance.SpawnProjectile(_projectileId, _position);
-        GameManager.instance.players[_thrownByPlayer].itemCount--;
+
+        if (_thrownByPlayer == Client.instance.myId)
+        {
+            GameManager.instance.players[_thrownByPlayer].playerController.weaponsController.grenadeCount = _projectileCount;
+        }
+        else
+        {
+            GameManager.instance.players[_thrownByPlayer].otherPlayerWeaponController.grenadeCount = _projectileCount;
+        }
+        //GameManager.instance.players[_thrownByPlayer].itemCount--;
+
+        WeaponUI.instance.SetGrenadeAmountText(_projectileCount);
     }
 
     public static void ProjectilePosition(Packet _packet)

@@ -185,9 +185,9 @@ public class Weapon : MonoBehaviour
         //_fireDirection.y += UnityEngine.Random.Range(-fireSpread, fireSpread);
         //_fireDirection.z += UnityEngine.Random.Range(-fireSpread, fireSpread);
 
-        // Define ray
-        Ray fireRay = new Ray(weaponsController.playerManager.shootOrigin.position, weaponsController.playerController.camTransform.forward);
-        Physics.Raycast(fireRay, out RaycastHit _hit, fireDistance);
+        //// Define ray
+        //Ray fireRay = new Ray(weaponsController.playerManager.shootOrigin.position, weaponsController.playerController.camTransform.forward);
+        //Physics.Raycast(fireRay, out RaycastHit _hit, fireDistance);
 
 
         //if (Physics.Raycast(shootOrigin.position, _viewDirection, out RaycastHit _hit, shootDistance))

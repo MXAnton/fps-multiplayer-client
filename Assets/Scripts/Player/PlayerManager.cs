@@ -128,8 +128,48 @@ public class PlayerManager : MonoBehaviour
         GameManager.instance.weapons[_weaponId].currentClipAmmo = _ammoInClip;
         GameManager.instance.weapons[_weaponId].currentExtraAmmo = _extraAmmo;
 
-        if (Physics.Raycast(_fireOrigin, _viewDirection, out RaycastHit _hit, shootDistance))
+
+        // Define ray
+        Ray fireRay = new Ray(_fireOrigin, _viewDirection);
+
+        // Store all raycast hits in shootdistance and choose the closest, accepted hit
+        RaycastHit[] _hits = Physics.RaycastAll(fireRay, shootDistance);
+
+        // If hit
+        if (_hits.Length > 0)
         {
+            RaycastHit _bestHit = _hits[0];
+
+            foreach (RaycastHit _hit in _hits)
+            {
+                if (_hit.collider.CompareTag("Player"))
+                {
+                    // If hit own player
+                    if (_hit.collider.GetComponent<PlayerManager>() == this)
+                    {
+                        return;
+                    }
+                }
+
+                // If this hit is better than current best hit, set this hit to best hit
+                if (_hit.distance < _bestHit.distance)
+                {
+                    _bestHit = _hit;
+                }
+                //Debug.Log(_hit.collider.gameObject.name);
+            }
+
+            if (_bestHit.collider.CompareTag("Player"))
+            {
+                // If hit own player
+                if (_bestHit.collider.GetComponent<PlayerManager>() == this)
+                {
+                    Debug.Log("Only hit was the player itself");
+                    return;
+                }
+            }
+
+
             LineRenderer _newBulletLine = Instantiate(bulletLinePrefab).GetComponent<LineRenderer>();
             if (_thisClientsShot == false)
             {
@@ -140,16 +180,16 @@ public class PlayerManager : MonoBehaviour
             }
             else
             {
-                _newBulletLine.SetPosition(0, 
+                _newBulletLine.SetPosition(0,
                     playerController.weaponsController.weaponsEquiped[playerController.weaponsController.weaponUsed].GetComponent<Weapon>().bulletSpawnPos.position);
             }
-            _newBulletLine.SetPosition(1, _hit.point);
+            _newBulletLine.SetPosition(1, _bestHit.point);
 
-            if (_hit.transform.tag != "Player" && _hit.transform.tag != "Enemy")
+            if (_bestHit.transform.tag != "Player" && _bestHit.transform.tag != "Enemy")
             {
-                GameObject _newBulletHole = Instantiate(bulletHolePrefab, _hit.point + (_hit.normal * 0.025f), Quaternion.identity);
+                GameObject _newBulletHole = Instantiate(bulletHolePrefab, _bestHit.point + (_bestHit.normal * 0.025f), Quaternion.identity);
                 //_newBulletHole.transform.parent = _hit.transform;
-                _newBulletHole.transform.rotation = Quaternion.FromToRotation(Vector3.up, _hit.normal);
+                _newBulletHole.transform.rotation = Quaternion.FromToRotation(Vector3.up, _bestHit.normal);
             }
         }
     }
